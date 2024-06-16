@@ -8,13 +8,21 @@ const Homepage = () => {
         navigate("/header");
     }
     return (
-        <div>
-            welcome buddy
-            <a href="/login">Login</a>
-            <br />
-            <br />
-            <a href="/register">Register</a>
-        </div>
+        <section className="bg-black text-white">
+            <div className="container mx-auto flex h-screen justify-around items-center">
+                <div>
+                    <h1 className="text-8xl font-bold">Welcome</h1>
+                </div>
+                    <div className="flex gap-10 text-2xl">
+                        <a href="/login" className="blue-btn">
+                            Login
+                        </a>
+                        <a href="/register" className="blue-btn">
+                            Register
+                        </a>
+                </div>
+            </div>
+        </section>
     );
 };
 

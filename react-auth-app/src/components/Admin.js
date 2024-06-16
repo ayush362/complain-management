@@ -1,26 +1,34 @@
-import React, { useState, useEffect } from "react";
-
+import React, { useState, useEffect, useContext } from "react";
+import { AuthContext } from "../context/AuthContext";
 const Admin = () => {
     const [activeComplaints, setActiveComplaints] = useState([]);
+    const { user } = useContext(AuthContext);
     const [resolvedComplaints, setResolvedComplaints] = useState([]);
     const [technicians, setTechnicians] = useState([]);
     const [selectedComplaint, setSelectedComplaint] = useState("");
     const [selectedTechnician, setSelectedTechnician] = useState("");
     const [error, setError] = useState("");
     const [success, setSuccess] = useState("");
-
+    console.log(user);
     // Fetch complaints
     useEffect(() => {
         const fetchComplaints = async () => {
             try {
-                const response = await fetch("http://localhost:5000/complaints", {
-                    headers: {
-                        "Authorization": localStorage.getItem("token"),
-                    },
-                });
+                const response = await fetch(
+                    "http://localhost:5000/complaints",
+                    {
+                        headers: {
+                            Authorization: localStorage.getItem("token"),
+                        },
+                    }
+                );
                 const data = await response.json();
-                setActiveComplaints(data.filter(complaint => complaint.status !== 'resolved'));
-                setResolvedComplaints(data.filter(complaint => complaint.status === 'resolved'));
+                setActiveComplaints(
+                    data.filter((complaint) => complaint.status !== "resolved")
+                );
+                setResolvedComplaints(
+                    data.filter((complaint) => complaint.status === "resolved")
+                );
             } catch (err) {
                 setError("Failed to fetch complaints");
             }
@@ -29,11 +37,14 @@ const Admin = () => {
         // Fetch technicians
         const fetchTechnicians = async () => {
             try {
-                const response = await fetch("http://localhost:5000/technicians", {
-                    headers: {
-                        "Authorization": localStorage.getItem("token"),
-                    },
-                });
+                const response = await fetch(
+                    "http://localhost:5000/technicians",
+                    {
+                        headers: {
+                            Authorization: localStorage.getItem("token"),
+                        },
+                    }
+                );
                 const data = await response.json();
                 setTechnicians(data);
             } catch (err) {
@@ -55,24 +66,31 @@ const Admin = () => {
         }
 
         try {
-            const response = await fetch(`http://localhost:5000/complaints/${selectedComplaint}/assign`, {
-                method: "PUT",
-                headers: {
-                    "Content-Type": "application/json",
-                    "Authorization": localStorage.getItem("token"),
-                },
-                body: JSON.stringify({ technicianId: selectedTechnician }),
-            });
+            const response = await fetch(
+                `http://localhost:5000/complaints/${selectedComplaint}/assign`,
+                {
+                    method: "PUT",
+                    headers: {
+                        "Content-Type": "application/json",
+                        Authorization: localStorage.getItem("token"),
+                    },
+                    body: JSON.stringify({ technicianId: selectedTechnician }),
+                }
+            );
             const data = await response.json();
             if (!response.ok) {
                 throw new Error(data.error);
             }
             setSuccess("Technician assigned successfully!");
-            
+
             // Update the status of the assigned complaint locally
-            setActiveComplaints(activeComplaints.map(complaint => 
-                complaint.id === selectedComplaint ? { ...complaint, status: 'assigned' } : complaint
-            ));
+            setActiveComplaints(
+                activeComplaints.map((complaint) =>
+                    complaint.id === selectedComplaint
+                        ? { ...complaint, status: "assigned" }
+                        : complaint
+                )
+            );
             setSelectedComplaint(""); // Reset the selected complaint
             setSelectedTechnician(""); // Reset the selected technician
         } catch (err) {
@@ -81,7 +99,7 @@ const Admin = () => {
     };
 
     return (
-        <div>
+        <section>
             <h2>Assign Technician to Complaint</h2>
             {error && <p style={{ color: "red" }}>{error}</p>}
             {success && <p style={{ color: "green" }}>{success}</p>}
@@ -94,10 +112,10 @@ const Admin = () => {
                 >
                     <option value="">--Select Complaint--</option>
                     {activeComplaints.map((complaint) => (
-                        <option 
-                            key={complaint.id} 
-                            value={complaint.id} 
-                            disabled={complaint.status === 'assigned'}
+                        <option
+                            key={complaint.id}
+                            value={complaint.id}
+                            disabled={complaint.status === "assigned"}
                         >
                             {complaint.description} ({complaint.status})
                         </option>
@@ -130,7 +148,7 @@ const Admin = () => {
                     </li>
                 ))}
             </ul>
-        </div>
+        </section>
     );
 };
 
