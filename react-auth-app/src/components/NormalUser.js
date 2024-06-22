@@ -17,7 +17,7 @@ const NormalUser = () => {
                 method: "POST",
                 headers: {
                     "Content-Type": "application/json",
-                    "Authorization": localStorage.getItem("token")
+                    Authorization: localStorage.getItem("token"),
                 },
                 body: JSON.stringify({ description }),
             });
@@ -35,11 +35,14 @@ const NormalUser = () => {
 
     const fetchUserComplaints = async () => {
         try {
-            const response = await fetch("http://localhost:5000/user/complaints", {
-                headers: {
-                    "Authorization": localStorage.getItem("token")
+            const response = await fetch(
+                "http://localhost:5000/user/complaints",
+                {
+                    headers: {
+                        Authorization: localStorage.getItem("token"),
+                    },
                 }
-            });
+            );
             const data = await response.json();
             if (response.ok) {
                 setComplaints(data);
@@ -56,30 +59,58 @@ const NormalUser = () => {
     }, []);
 
     return (
-        <div>
-            <h2>Raise Complaint</h2>
-            <form onSubmit={handleSubmit}>
-                <div>
-                    <label>Description:</label>
-                    <textarea
-                        value={description}
-                        onChange={(e) => setDescription(e.target.value)}
-                        required
-                    />
-                </div>
-                {error && <p style={{color: 'red'}}>{error}</p>}
-                {success && <p style={{color: 'green'}}>{success}</p>}
-                <button type="submit">Submit</button>
-            </form>
-            <h2>Your Complaints</h2>
-            <ul>
-                {complaints.map(complaint => (
-                    <li key={complaint.id}>
-                        {complaint.description} - Status: {complaint.status}
-                    </li>
-                ))}
-            </ul>
-        </div>
+        <section className="flex flex-col justify-center items-center h-full">
+            <div className="flex flex-col gap-10 mt-20 w-2/3 bg-white rounded-3xl p-20">
+                <h2 className="text-center font-bold text-2xl">
+                    Raise Complaint
+                </h2>
+                <form onSubmit={handleSubmit}>
+                    <div className="flex flex-col gap-5">
+                        <label>Description:</label>
+                        <textarea
+                            className="border-2 border-black"
+                            value={description}
+                            onChange={(e) => setDescription(e.target.value)}
+                            required
+                        />
+                    </div>
+                    {error && <p style={{ color: "red" }}>{error}</p>}
+                    {success && <p style={{ color: "green" }}>{success}</p>}
+                    <button type="submit" className="blue-btn mt-5">
+                        Submit
+                    </button>
+                </form>
+                <h2 className="text-center font-bold text-2xl">
+                    Your Complaints
+                </h2>{" "}
+                <table>
+                    <tr className="flex justify-between text-2xl mb-5">
+                        <th className="px-20">Description</th>
+                        <th className="px-10">Status</th>
+                    </tr>
+                    <ul className="text-xl flex flex-col gap-5">
+                        {complaints.map((complaint) => (
+                            <li key={complaint.id}>
+                                <tr className="flex justify-between">
+                                    <td className="px-20">
+                                        {complaint.description}{" "}
+                                    </td>
+                                    <td
+                                        className={`${
+                                            complaint.status === "resolved"
+                                                ? "bg-green-200"
+                                                : "bg-yellow-200"
+                                        } px-2 py-1 rounded-3xl`}
+                                    >
+                                        {complaint.status}
+                                    </td>
+                                </tr>
+                            </li>
+                        ))}
+                    </ul>
+                </table>
+            </div>
+        </section>
     );
 };
 

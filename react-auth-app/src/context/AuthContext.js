@@ -15,7 +15,7 @@ const AuthProvider = ({ children }) => {
             setUser(decoded);
         }
     }, []);
-
+    // it will fetch all the user from the login table and return the user details
     const login = async (email, password) => {
         try {
             const response = await fetch("http://localhost:5000/login", {
@@ -27,6 +27,7 @@ const AuthProvider = ({ children }) => {
             });
             const data = await response.json();
             if (response.ok) {
+                // Set the local storage
                 localStorage.setItem("token", data.token);
                 const decoded = JSON.parse(atob(data.token.split(".")[1]));
                 console.log("Login successful, setting user:", decoded); // Log the decoded user details
@@ -39,7 +40,7 @@ const AuthProvider = ({ children }) => {
             throw error;
         }
     };
-
+    // it will remove the token from the local storage and set the user to null
     const logout = () => {
         console.log("Logging out user:", user); // Log the current user details before logging out
         localStorage.removeItem("token");
@@ -51,9 +52,7 @@ const AuthProvider = ({ children }) => {
     };
 
     return (
-        <AuthContext.Provider
-            value={{ user, login,  logout, isAuthenticated }}
-        >
+        <AuthContext.Provider value={{ user, login, logout, isAuthenticated }}>
             {children}
         </AuthContext.Provider>
     );

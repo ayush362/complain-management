@@ -7,17 +7,17 @@ const jwt = require("jsonwebtoken");
 const app = express();
 const port = 5000;
 
-const JWT_SECRET = "your_jwt_secret"; // Replace with your actual secret
-
+const JWT_SECRET = "12345678";
 app.use(bodyparser.json());
 app.use(cors());
-
+// Creating the connection
 const connection = mysql.createConnection({
     host: "localhost",
     user: "root",
     password: "",
     database: "complain-management",
 });
+// Connection to the Database
 
 connection.connect((err) => {
     if (err) {
@@ -26,11 +26,29 @@ connection.connect((err) => {
         console.log("Connected to the database");
     }
 });
-
+// The login for verification token using jwt
+const verifyToken = (req, res, next) => {
+    const token = req.headers["authorization"];
+    if (!token) {
+        return res.status(403).send({ error: "No token provided" });
+    }
+    jwt.verify(token, JWT_SECRET, (err, decoded) => {
+        if (err) {
+            return res
+                .status(500)
+                .send({ error: "Failed to authenticate token" });
+        }
+        req.userId = decoded.id;
+        req.userEmail = decoded.email;
+        req.isAdmin = decoded.isAdmin;
+        req.isTechnician = decoded.isTechnician;
+        next();
+    });
+};
 app.get("/", (req, res) => {
-    res.send("Hello World");
+    res.send("Server is ready");
 });
-
+// Login route
 app.post("/login", (req, res) => {
     const { email, password } = req.body;
     if (!email || !password) {
@@ -65,24 +83,7 @@ app.post("/login", (req, res) => {
         res.send({ token });
     });
 });
-const verifyToken = (req, res, next) => {
-    const token = req.headers["authorization"];
-    if (!token) {
-        return res.status(403).send({ error: "No token provided" });
-    }
-    jwt.verify(token, JWT_SECRET, (err, decoded) => {
-        if (err) {
-            return res
-                .status(500)
-                .send({ error: "Failed to authenticate token" });
-        }
-        req.userId = decoded.id;
-        req.userEmail = decoded.email;
-        req.isAdmin = decoded.isAdmin;
-        req.isTechnician = decoded.isTechnician;
-        next();
-    });
-};
+// Register Route
 app.post("/register", (req, res) => {
     const { email, password } = req.body;
     if (!email || !password) {
@@ -120,10 +121,12 @@ app.post("/register", (req, res) => {
     });
 });
 
-// Example of a protected route
-app.get("/protected", verifyToken, (req, res) => {
-    res.send({ message: "This is a protected route", user: req.userId });
-});
+// app.get("/protected", verifyToken, (req, res) => {
+//     res.send({ message: "This is a protected route", user: req.userId });
+// });
+
+// Complaints routes
+// Insert the compaints in the database
 app.post("/complaints", verifyToken, (req, res) => {
     const { description } = req.body;
     const userId = req.userId;
@@ -134,6 +137,8 @@ app.post("/complaints", verifyToken, (req, res) => {
         res.send({ id: result.insertId });
     });
 });
+
+// Fetch the complains
 app.get("/complaints", verifyToken, (req, res) => {
     if (!req.isAdmin) return res.status(403).send({ error: "Unauthorized" });
     const query = "SELECT * FROM complaints";
@@ -143,7 +148,7 @@ app.get("/complaints", verifyToken, (req, res) => {
         res.send(results);
     });
 });
-
+// Assinging the complain using techinician id
 app.put("/complaints/:id/assign", verifyToken, (req, res) => {
     if (!req.isAdmin) return res.status(403).send({ error: "Unauthorized" });
     const { technicianId } = req.body;
@@ -156,7 +161,7 @@ app.put("/complaints/:id/assign", verifyToken, (req, res) => {
         res.send({ message: "Technician assigned successfully" });
     });
 });
-
+// Resolving the complain from techinician side
 app.put("/complaints/:id/resolve", verifyToken, (req, res) => {
     if (!req.isTechnician)
         return res.status(403).send({ error: "Unauthorized" });
@@ -170,6 +175,7 @@ app.put("/complaints/:id/resolve", verifyToken, (req, res) => {
         res.send({ message: "Complaint resolved successfully" });
     });
 });
+// Approving the complain
 app.put("/complaints/:id/approve", verifyToken, (req, res) => {
     if (!req.isAdmin) return res.status(403).send({ error: "Unauthorized" });
     const complaintId = req.params.id;
@@ -180,7 +186,7 @@ app.put("/complaints/:id/approve", verifyToken, (req, res) => {
         res.send({ message: "Complaint approved successfully" });
     });
 });
-
+// Fetching the details of the techinician
 app.get("/technicians", (req, res) => {
     const query = "SELECT id, email FROM user WHERE isTechnician = 1";
     connection.query(query, (err, results) => {
@@ -191,7 +197,7 @@ app.get("/technicians", (req, res) => {
         res.send(results);
     });
 });
-
+// Fetching the complaints assigned to the particular techinician
 app.get("/technician/complaints", verifyToken, (req, res) => {
     if (!req.isTechnician)
         return res.status(403).send({ error: "Unauthorized" });
@@ -215,7 +221,7 @@ app.get("/user/complaints", verifyToken, (req, res) => {
         res.send(results);
     });
 });
-// Add this route to fetch resolved complaints for admin
+// this route to fetch resolved complaints for admin
 app.get("/admin/resolved-complaints", verifyToken, (req, res) => {
     if (!req.isAdmin) return res.status(403).send({ error: "Unauthorized" });
     const query = "SELECT * FROM complaints WHERE status = 'resolved'";
@@ -228,7 +234,7 @@ app.get("/admin/resolved-complaints", verifyToken, (req, res) => {
     });
 });
 
-// Add this route to fetch resolved complaints for technician
+//   fetch resolved complaints for technician
 app.get("/technician/resolved-complaints", verifyToken, (req, res) => {
     if (!req.isTechnician)
         return res.status(403).send({ error: "Unauthorized" });

@@ -56,7 +56,7 @@ const Admin = () => {
         fetchTechnicians();
     }, []);
 
-    // Handle assigning technician to complaint
+    // assigning technician to complaint
     const handleAssign = async () => {
         setError("");
         setSuccess("");
@@ -100,54 +100,78 @@ const Admin = () => {
 
     return (
         <section>
-            <h2>Assign Technician to Complaint</h2>
-            {error && <p style={{ color: "red" }}>{error}</p>}
-            {success && <p style={{ color: "green" }}>{success}</p>}
-
-            <div>
-                <label>Select Complaint:</label>
-                <select
-                    value={selectedComplaint}
-                    onChange={(e) => setSelectedComplaint(e.target.value)}
-                >
-                    <option value="">--Select Complaint--</option>
-                    {activeComplaints.map((complaint) => (
-                        <option
-                            key={complaint.id}
-                            value={complaint.id}
-                            disabled={complaint.status === "assigned"}
+            <div className="flex gap-5">
+                <div className="w-1/2 py-10 flex flex-col gap-10 bg-white h-[70vh] mt-20 px-32 rounded-3xl text-start">
+                    <h2 className="mb-20 text-4xl font-bold text-center">
+                        Admin
+                    </h2>
+                    <h2 className="text-2xl font-serif font-semibold">
+                        Assign Technician to Complaint
+                    </h2>
+                    {error && <p style={{ color: "red" }}>{error}</p>}
+                    {success && <p style={{ color: "green" }}>{success}</p>}
+                    {/* Display all the compalint */}
+                    <div>
+                        <label>Select Complaint:</label>
+                        <select
+                            value={selectedComplaint}
+                            onChange={(e) =>
+                                setSelectedComplaint(e.target.value)
+                            }
                         >
-                            {complaint.description} ({complaint.status})
-                        </option>
-                    ))}
-                </select>
+                            <option value="">--Select Complaint--</option>
+                            {activeComplaints.map((complaint) => (
+                                <option
+                                    key={complaint.id}
+                                    value={complaint.id}
+                                    disabled={complaint.status === "assigned"}
+                                >
+                                    {complaint.description} ({complaint.status})
+                                </option>
+                            ))}
+                        </select>
+                    </div>
+                    {/* Displays all the techinician */}
+                    <div>
+                        <label>Select Technician:</label>
+                        <select
+                            value={selectedTechnician}
+                            onChange={(e) =>
+                                setSelectedTechnician(e.target.value)
+                            }
+                        >
+                            <option value="">--Select Technician--</option>
+                            {technicians.map((tech) => (
+                                <option key={tech.id} value={tech.id}>
+                                    {tech.email}
+                                </option>
+                            ))}
+                        </select>
+                    </div>
+
+                    <button onClick={handleAssign} className="blue-btn">
+                        Assign
+                    </button>
+                </div>
+                {/* Displays All the reslved complaints */}
+                <div className="flex flex-col py-10 bg-white mt-20 rounded-3xl px-5">
+                    <h2 className="text-center text-2xl font-bold mb-20">
+                        Resolved Complaints
+                    </h2>
+                    <ul className="flex flex-col gap-4 font-serif text-xl">
+                        {resolvedComplaints.map((complaint) => (
+                            <li key={complaint.id}>
+                                {complaint.description} - Status:{" "}
+                                <span
+                                    className={`${complaint.status}: bg-green-200 ? "" px-2 py-1 rounded-3xl`}
+                                >
+                                    {complaint.status}
+                                </span>
+                            </li>
+                        ))}
+                    </ul>
+                </div>
             </div>
-
-            <div>
-                <label>Select Technician:</label>
-                <select
-                    value={selectedTechnician}
-                    onChange={(e) => setSelectedTechnician(e.target.value)}
-                >
-                    <option value="">--Select Technician--</option>
-                    {technicians.map((tech) => (
-                        <option key={tech.id} value={tech.id}>
-                            {tech.email}
-                        </option>
-                    ))}
-                </select>
-            </div>
-
-            <button onClick={handleAssign}>Assign</button>
-
-            <h2>Resolved Complaints</h2>
-            <ul>
-                {resolvedComplaints.map((complaint) => (
-                    <li key={complaint.id}>
-                        {complaint.description} - Status: {complaint.status}
-                    </li>
-                ))}
-            </ul>
         </section>
     );
 };

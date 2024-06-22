@@ -16,6 +16,7 @@ const Login = () => {
             inputRef.current.focus();
         }
     }, []);
+    // Will send the credential login function in auth context and then it will check whether the credential is correct or not
     const handleSubmit = async (e) => {
         e.preventDefault();
         try {
